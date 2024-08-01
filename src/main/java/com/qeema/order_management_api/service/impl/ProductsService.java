@@ -4,13 +4,13 @@ import com.qeema.order_management_api.dto.ProductDto;
 import com.qeema.order_management_api.entity.Product;
 import com.qeema.order_management_api.mapper.ProductMapper;
 import com.qeema.order_management_api.repository.ProductsRepository;
-import com.qeema.order_management_api.service.IProductService;
+import com.qeema.order_management_api.service.IProductsService;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
 @Service
 @AllArgsConstructor
-public class ProductService implements IProductService {
+public class ProductsService implements IProductsService {
 
     private ProductsRepository productsRepository;
 
