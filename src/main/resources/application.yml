@@ -6,7 +6,6 @@ spring:
     driverClassName: org.h2.Driver
     username: salma
     password: salma
-#  to log in to the db console from the browser
   h2:
      console:
         enabled: true
