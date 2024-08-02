@@ -15,13 +15,12 @@ public class OrderItem {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne(cascade = CascadeType.ALL)
+    @ManyToOne
     @JoinColumn(name = "order_id")
     private Order order;
 
     private Long productId;
 
     private Long quantity;
-
 
 }

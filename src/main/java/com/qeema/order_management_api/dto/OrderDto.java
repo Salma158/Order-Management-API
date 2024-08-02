@@ -7,5 +7,9 @@ import java.util.List;
 @Data
 public class OrderDto {
 
-    private List<OrderItemDto> items;
+    private Long id;
+
+    private String status;
+
+    private List<OrderItemDto> orderItems;
 }
