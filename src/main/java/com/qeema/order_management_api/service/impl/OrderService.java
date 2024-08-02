@@ -1,9 +1,10 @@
 package com.qeema.order_management_api.service.impl;
 
 import com.qeema.order_management_api.dto.OrderDto;
-import com.qeema.order_management_api.dto.OrderItemDto;
 import com.qeema.order_management_api.entity.Order;
 import com.qeema.order_management_api.entity.OrderItem;
+import com.qeema.order_management_api.entity.Product;
+import com.qeema.order_management_api.exception.InsufficientStockException;
 import com.qeema.order_management_api.exception.ResourceNotFoundException;
 import com.qeema.order_management_api.mapper.OrderMapper;
 import com.qeema.order_management_api.repository.OrdersRepository;
@@ -25,10 +26,14 @@ public class OrderService implements IOrderService {
     @Transactional
     public OrderDto createOrder(OrderDto orderDto) {
 
-        for (OrderItemDto item : orderDto.getOrderItems()) {
-            productsRepository.findById(item.getProductId())
-                    .orElseThrow(() -> new ResourceNotFoundException("product", "product id", item.getProductId()));
-        }
+        orderDto.getOrderItems().forEach(item -> {
+            Product product = productsRepository.findById(item.getProductId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Product", "product id", item.getProductId()));
+
+            if (item.getQuantity() > product.getStock()) {
+                throw new InsufficientStockException("Insufficient stock for product id: " + item.getProductId());
+            }
+        });
 
 
         Order order = OrderMapper.MAPPER.maptoOrder(orderDto);

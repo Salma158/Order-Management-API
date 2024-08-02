@@ -47,4 +47,16 @@ public class GlobalExceptionHandler  extends ResponseEntityExceptionHandler {
         );
         return new ResponseEntity<>(errorResponseDTO, HttpStatus.NOT_FOUND);
     }
+
+    @ExceptionHandler(InsufficientStockException.class)
+    public ResponseEntity<ErrorResponseDto> InsufficientStockException(InsufficientStockException exception, WebRequest webRequest) {
+        ErrorResponseDto errorResponseDTO = new ErrorResponseDto(
+                webRequest.getDescription(false),
+                HttpStatus.CONFLICT,
+                exception.getMessage(),
+                LocalDateTime.now()
+        );
+        return new ResponseEntity<>(errorResponseDTO, HttpStatus.CONFLICT);
+    }
+
 }
