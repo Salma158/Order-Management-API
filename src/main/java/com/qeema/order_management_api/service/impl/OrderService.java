@@ -13,6 +13,7 @@ import com.qeema.order_management_api.repository.ProductsRepository;
 import com.qeema.order_management_api.service.IOrderService;
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.util.HashSet;
@@ -51,8 +52,35 @@ public class OrderService implements IOrderService {
         }
 
         Order savedOrder = ordersRepository.save(order);
+        processFulfillment(savedOrder);
         return OrderMapper.MAPPER.maptoOrderDto(savedOrder);
     }
+
+    @Async
+    public void processFulfillment(Order order) {
+        decrementStock(order);
+        sendConfirmationEmail(order);
+        handlePacking(order);
+        assignDriver(order);
+        handleDelivery(order);
+    }
+
+    public void decrementStock(Order order){
+        System.out.println("decrease the stock of the product");
+    }
+    public void sendConfirmationEmail(Order order){
+        System.out.println("sending confirmation email to the user");
+    }
+    public void handlePacking(Order order){
+        System.out.println("handle the packaging of the order products");
+    }
+    public void assignDriver(Order order){
+        System.out.println("assigning a driver for the order");
+    }
+    public void handleDelivery(Order order){
+        System.out.println("assigning a truck for the order");
+    }
+
 
     @Override
     public List<OrderDto> fetchAllOrders() {
