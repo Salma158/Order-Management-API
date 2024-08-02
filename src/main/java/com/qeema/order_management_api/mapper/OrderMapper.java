@@ -1,9 +1,7 @@
 package com.qeema.order_management_api.mapper;
 
 import com.qeema.order_management_api.dto.OrderDto;
-import com.qeema.order_management_api.dto.ProductDto;
 import com.qeema.order_management_api.entity.Order;
-import com.qeema.order_management_api.entity.Product;
 import org.mapstruct.Mapper;
 import org.mapstruct.factory.Mappers;
 
