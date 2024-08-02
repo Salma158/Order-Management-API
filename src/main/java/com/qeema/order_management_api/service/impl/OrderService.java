@@ -52,35 +52,37 @@ public class OrderService implements IOrderService {
         }
 
         Order savedOrder = ordersRepository.save(order);
-        processFulfillment(savedOrder);
         return OrderMapper.MAPPER.maptoOrderDto(savedOrder);
     }
 
     @Async
-    public void processFulfillment(Order order) {
-        decrementStock(order);
-        sendConfirmationEmail(order);
-        handlePacking(order);
-        assignDriver(order);
-        handleDelivery(order);
+    public void processFulfillment() {
+        decrementStock();
+        sendConfirmationEmail();
+        handlePacking();
+        assignDriver();
+        handleDelivery();
     }
 
-    public void decrementStock(Order order){
-        System.out.println("decrease the stock of the product");
+    public void decrementStock(){
+            System.out.println("decrease the stock of the product");
     }
-    public void sendConfirmationEmail(Order order){
+
+    public void sendConfirmationEmail(){
         System.out.println("sending confirmation email to the user");
     }
-    public void handlePacking(Order order){
+
+    public void handlePacking(){
         System.out.println("handle the packaging of the order products");
     }
-    public void assignDriver(Order order){
+
+    public void assignDriver(){
         System.out.println("assigning a driver for the order");
     }
-    public void handleDelivery(Order order){
+
+    public void handleDelivery(){
         System.out.println("assigning a truck for the order");
     }
-
 
     @Override
     public List<OrderDto> fetchAllOrders() {
