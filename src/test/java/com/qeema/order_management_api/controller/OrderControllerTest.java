@@ -17,7 +17,7 @@ import org.springframework.http.ResponseEntity;
 import java.util.List;
 
 @ExtendWith(MockitoExtension.class)
-public class OrderControllerWebLayerTest {
+public class OrderControllerTest {
 
     @Mock
     private OrderService orderService;
@@ -78,7 +78,7 @@ public class OrderControllerWebLayerTest {
     }
 
     @Test
-    @DisplayName("all created orders are fetched")
+    @DisplayName("All created orders are fetched")
     void testFetchAllOrders_returnsListOfOrders() {
 
         // Arrange
