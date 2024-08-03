@@ -1,7 +1,6 @@
 package com.qeema.order_management_api.controller;
 
 import com.qeema.order_management_api.dto.ProductDto;
-import com.qeema.order_management_api.repository.ProductsRepository;
 import com.qeema.order_management_api.service.IProductsService;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
