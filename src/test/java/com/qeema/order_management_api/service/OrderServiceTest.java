@@ -6,6 +6,7 @@ import com.qeema.order_management_api.entity.Order;
 import com.qeema.order_management_api.entity.OrderItem;
 import com.qeema.order_management_api.entity.Product;
 import com.qeema.order_management_api.exception.DuplicateProductException;
+import com.qeema.order_management_api.exception.ResourceNotFoundException;
 import com.qeema.order_management_api.repository.OrdersRepository;
 import com.qeema.order_management_api.repository.ProductsRepository;
 import com.qeema.order_management_api.service.impl.OrderService;
@@ -17,12 +18,11 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Mockito.*;
 import java.util.List;
 import java.util.Optional;
+
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 public class OrderServiceTest {
@@ -36,61 +36,54 @@ public class OrderServiceTest {
     @InjectMocks
     private OrderService orderService;
 
-
     private OrderDto requestOrderDto;
     private OrderDto expectedOrderDto;
     private Order savedOrder;
     private Product product;
 
-
     @BeforeEach
     public void setUp() {
-        // Initialize request OrderDto
-        requestOrderDto = new OrderDto();
-        OrderItemDto requestOrderItem = new OrderItemDto();
-        requestOrderItem.setProductId(1L);
-        requestOrderItem.setQuantity(2L);
 
-        List<OrderItemDto> requestOrderItems = List.of(requestOrderItem);
-        requestOrderDto.setOrderItems(requestOrderItems);
+        requestOrderDto = createOrderDto(null, 1L, 2L);
 
-        // simulate saved order
-        OrderItem savedOrderItem = new OrderItem();
-        savedOrderItem.setId(1L);
-        savedOrderItem.setProductId(1L);
-        savedOrderItem.setQuantity(2L);
+        savedOrder = createOrder(1L, "Pending", 1L, 2L);
 
-        List<OrderItem> savedOrderItems = List.of(savedOrderItem);
-
-        savedOrder = new Order();
-        savedOrder.setId(1L);
-        savedOrder.setStatus("Pending");
-        savedOrder.setOrderItems(savedOrderItems);
-
-        // Initialize expected order
-        OrderItemDto excpectedOrderItemDto = new OrderItemDto();
-        excpectedOrderItemDto.setId(1L);
-        excpectedOrderItemDto.setProductId(1L);
-        excpectedOrderItemDto.setQuantity(2L);
-
-        List<OrderItemDto> excpectedOrderItems = List.of(excpectedOrderItemDto);
-
-        expectedOrderDto = new OrderDto();
+        expectedOrderDto = createOrderDto(1L, 1L, 2L);
         expectedOrderDto.setId(1L);
         expectedOrderDto.setStatus("Pending");
-        expectedOrderDto.setOrderItems(excpectedOrderItems);
 
-        // Initialize product
         product = new Product();
         product.setId(1L);
         product.setStock(10);
+    }
 
+    private OrderDto createOrderDto(Long itemId, Long productId, Long quantity) {
+        OrderDto orderDto = new OrderDto();
+        OrderItemDto orderItemDto = new OrderItemDto();
+        orderItemDto.setId(itemId);
+        orderItemDto.setProductId(productId);
+        orderItemDto.setQuantity(quantity);
+        orderDto.setOrderItems(List.of(orderItemDto));
+        return orderDto;
+    }
+
+    private Order createOrder(Long orderId, String status, Long productId, Long quantity) {
+        Order order = new Order();
+        order.setId(orderId);
+        order.setStatus(status);
+
+        OrderItem orderItem = new OrderItem();
+        orderItem.setId(1L);
+        orderItem.setProductId(productId);
+        orderItem.setQuantity(quantity);
+
+        order.setOrderItems(List.of(orderItem));
+        return order;
     }
 
     @Test
     @DisplayName("Create order with valid details")
     void testCreateOrder_whenValidOrderDetailsProvided_returnsCreatedOrder() {
-
         // Arrange
         when(orderRepository.save(any(Order.class))).thenReturn(savedOrder);
         when(productsRepository.findById(1L)).thenReturn(Optional.of(product));
@@ -101,28 +94,38 @@ public class OrderServiceTest {
         // Assert
         assertEquals(expectedOrderDto.getId(), createdOrder.getId());
         assertEquals(expectedOrderDto.getStatus(), createdOrder.getStatus());
-        assertEquals(expectedOrderDto.getOrderItems(), createdOrder.getOrderItems());
+        assertEquals(expectedOrderDto.getOrderItems().size(), createdOrder.getOrderItems().size());
+        assertEquals(expectedOrderDto.getOrderItems().get(0).getId(), createdOrder.getOrderItems().get(0).getId());
+        assertEquals(expectedOrderDto.getOrderItems().get(0).getProductId(), createdOrder.getOrderItems().get(0).getProductId());
+        assertEquals(expectedOrderDto.getOrderItems().get(0).getQuantity(), createdOrder.getOrderItems().get(0).getQuantity());
         verify(orderRepository).save(any(Order.class));
-
     }
 
     @Test
-    @DisplayName("throw DuplicateProductException when duplicate product IDs are provided")
+    @DisplayName("Throw DuplicateProductException when duplicate product IDs are provided")
     void testCreateOrder_whenDuplicateProductIds_throwsDuplicateProductException() {
         // Arrange
-        OrderDto orderDtoWithDuplicates = new OrderDto();
-        OrderItemDto item1 = new OrderItemDto();
-        item1.setProductId(1L);
-        item1.setQuantity(2L);
-        OrderItemDto item2 = new OrderItemDto();
-        item2.setProductId(1L);
-        item2.setQuantity(1L);
+        OrderDto orderDtoWithDuplicates = createOrderDto(null, 1L, 2L);
+        OrderItemDto duplicateItem = new OrderItemDto();
+        duplicateItem.setProductId(1L);
+        duplicateItem.setQuantity(1L);
+        orderDtoWithDuplicates.setOrderItems(List.of(orderDtoWithDuplicates.getOrderItems().get(0), duplicateItem));
 
-        orderDtoWithDuplicates.setOrderItems(List.of(item1, item2));
         when(productsRepository.findById(1L)).thenReturn(Optional.of(product));
 
         // Act & Assert
         assertThrows(DuplicateProductException.class, () -> orderService.createOrder(orderDtoWithDuplicates));
     }
 
+    @Test
+    @DisplayName("Throw ResourceNotFoundException when product does not exist")
+    void testCreateOrder_whenProductDoesNotExist_throwsResourceNotFoundException() {
+        // Arrange
+        OrderDto invalidOrderDto = createOrderDto(null, 999L, 2L);
+
+        when(productsRepository.findById(999L)).thenReturn(Optional.empty());
+
+        // Act & Assert
+        assertThrows(ResourceNotFoundException.class, () -> orderService.createOrder(invalidOrderDto));
+    }
 }
