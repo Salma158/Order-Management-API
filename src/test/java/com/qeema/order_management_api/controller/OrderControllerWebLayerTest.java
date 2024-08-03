@@ -27,9 +27,11 @@ public class OrderControllerWebLayerTest {
 
     private OrderDto requestOrderDto;
     private OrderDto expectedOrderDto;
+    private List<OrderDto> expectedOrderList;
 
     @BeforeEach
     public void setUp() {
+
         // Initialize request OrderDto
         requestOrderDto = new OrderDto();
         OrderItemDto requestOrderItem = new OrderItemDto();
@@ -50,6 +52,8 @@ public class OrderControllerWebLayerTest {
         expectedOrderDto.setOrderItems(responseOrderItems);
         expectedOrderDto.setId(1L);
         expectedOrderDto.setStatus("Pending");
+
+        expectedOrderList = List.of(expectedOrderDto);
     }
 
     @Test
@@ -71,5 +75,25 @@ public class OrderControllerWebLayerTest {
         assertEquals(expectedOrderDto.getOrderItems(), createdOrder.getOrderItems());
         verify(orderService).createOrder(any(OrderDto.class));
         verify(orderService).processFulfillment();
-}
+    }
+
+    @Test
+    @DisplayName("all created orders are fetched")
+    void testFetchAllOrders_returnsListOfOrders() {
+
+        // Arrange
+        when(orderService.fetchAllOrders()).thenReturn(expectedOrderList);
+
+        // Act
+        ResponseEntity<List<OrderDto>> responseEntity = ordersController.fetchAllOrders();
+        List<OrderDto> orders = responseEntity.getBody();
+
+        // Assert
+        assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
+        assertEquals(expectedOrderList, orders);
+        verify(orderService).fetchAllOrders();
+    }
+
+
+
 }

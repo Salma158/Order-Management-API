@@ -31,7 +31,7 @@ public class OrdersController {
     public ResponseEntity<List<OrderDto>> fetchAllOrders(){
         List<OrderDto> orders = IOrderService.fetchAllOrders();
         return ResponseEntity
-                .status(HttpStatus.CREATED)
+                .status(HttpStatus.OK)
                 .body(orders);
     }
 }
