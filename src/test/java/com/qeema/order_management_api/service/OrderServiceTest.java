@@ -5,6 +5,7 @@ import com.qeema.order_management_api.dto.OrderItemDto;
 import com.qeema.order_management_api.entity.Order;
 import com.qeema.order_management_api.entity.OrderItem;
 import com.qeema.order_management_api.entity.Product;
+import com.qeema.order_management_api.exception.DuplicateProductException;
 import com.qeema.order_management_api.repository.OrdersRepository;
 import com.qeema.order_management_api.repository.ProductsRepository;
 import com.qeema.order_management_api.service.impl.OrderService;
@@ -20,7 +21,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
 import java.util.List;
 import java.util.Optional;
-
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -89,6 +90,7 @@ public class OrderServiceTest {
     @Test
     @DisplayName("Create order with valid details")
     void testCreateOrder_whenValidOrderDetailsProvided_returnsCreatedOrder() {
+
         // Arrange
         when(orderRepository.save(any(Order.class))).thenReturn(savedOrder);
         when(productsRepository.findById(1L)).thenReturn(Optional.of(product));
@@ -103,4 +105,24 @@ public class OrderServiceTest {
         verify(orderRepository).save(any(Order.class));
 
     }
+
+    @Test
+    @DisplayName("throw DuplicateProductException when duplicate product IDs are provided")
+    void testCreateOrder_whenDuplicateProductIds_throwsDuplicateProductException() {
+        // Arrange
+        OrderDto orderDtoWithDuplicates = new OrderDto();
+        OrderItemDto item1 = new OrderItemDto();
+        item1.setProductId(1L);
+        item1.setQuantity(2L);
+        OrderItemDto item2 = new OrderItemDto();
+        item2.setProductId(1L);
+        item2.setQuantity(1L);
+
+        orderDtoWithDuplicates.setOrderItems(List.of(item1, item2));
+        when(productsRepository.findById(1L)).thenReturn(Optional.of(product));
+
+        // Act & Assert
+        assertThrows(DuplicateProductException.class, () -> orderService.createOrder(orderDtoWithDuplicates));
+    }
+
 }
