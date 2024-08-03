@@ -33,7 +33,7 @@ public class OrderControllerTest {
 
     @BeforeEach
     public void setUp() {
-        // Initialize request OrderDto using builder pattern
+
         requestOrderDto = OrderDto.builder()
                 .orderItems(List.of(OrderItemDto.builder()
                         .productId(1L)
@@ -41,7 +41,6 @@ public class OrderControllerTest {
                         .build()))
                 .build();
 
-        // Initialize expected response OrderDto using builder pattern
         expectedOrderDto = OrderDto.builder()
                 .id(1L)
                 .status("Pending")
@@ -52,7 +51,6 @@ public class OrderControllerTest {
                         .build()))
                 .build();
 
-        // Initialize expected order list using builder pattern
         expectedOrderList = List.of(expectedOrderDto);
     }
 
