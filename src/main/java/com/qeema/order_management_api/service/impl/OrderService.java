@@ -12,7 +12,7 @@ import com.qeema.order_management_api.repository.OrdersRepository;
 import com.qeema.order_management_api.repository.ProductsRepository;
 import com.qeema.order_management_api.service.IOrderService;
 import jakarta.transaction.Transactional;
-import lombok.AllArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
@@ -21,11 +21,18 @@ import java.util.List;
 import java.util.Set;
 
 @Service
-@AllArgsConstructor
 public class OrderService implements IOrderService {
 
-    private OrdersRepository ordersRepository;
-    private ProductsRepository productsRepository;
+    private final OrdersRepository ordersRepository;
+    private final ProductsRepository productsRepository;
+
+    public OrderService(OrdersRepository ordersRepository, ProductsRepository productsRepository){
+        this.ordersRepository = ordersRepository;
+        this.productsRepository = productsRepository;
+    }
+
+    @Value("${order.default.status}")
+    private String defaultStatus;
 
     @Override
     @Transactional
@@ -46,7 +53,9 @@ public class OrderService implements IOrderService {
             }
         });
 
+
         Order order = OrderMapper.MAPPER.maptoOrder(orderDto);
+        order.setStatus(defaultStatus);
         for (OrderItem item : order.getOrderItems()) {
             item.setOrder(order);
         }

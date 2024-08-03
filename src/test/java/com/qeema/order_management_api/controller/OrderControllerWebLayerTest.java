@@ -3,15 +3,16 @@ package com.qeema.order_management_api.controller;
 import com.qeema.order_management_api.dto.OrderDto;
 import com.qeema.order_management_api.dto.OrderItemDto;
 import com.qeema.order_management_api.service.impl.OrderService;
-import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
-
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import java.util.List;
 
@@ -24,35 +25,35 @@ public class OrderControllerWebLayerTest {
     @InjectMocks
     private OrdersController ordersController;
 
-    @Test
-    @DisplayName("Order can be created")
-    void testCreateOrder_whenValidOrderDetailsProvided_returnsCreatedOrderDetails() {
+    private OrderDto orderDto;
 
-        //Arrange
-        OrderDto orderDto = new OrderDto();
+    @BeforeEach
+    public void setUp() {
+        orderDto = new OrderDto();
         OrderItemDto orderItemDto = new OrderItemDto();
         orderItemDto.setProductId(1L);
         orderItemDto.setQuantity(20L);
 
         List<OrderItemDto> orderItems = List.of(orderItemDto);
+        orderDto = new OrderDto();
         orderDto.setOrderItems(orderItems);
+    }
 
-        OrderDto createdOrderDto = new OrderDto();
-        createdOrderDto.setOrderItems(orderItems);
-        createdOrderDto.setId(1L);
-        createdOrderDto.setStatus("Pending");
+    @Test
+    @DisplayName("Order can be created")
+    void testCreateOrder_whenValidOrderDetailsProvided_returnsCreatedOrderDetails() {
 
-        when(orderService.createOrder(any(OrderDto.class))).thenReturn(createdOrderDto);
+        //Arrange
+        when(orderService.createOrder(any(OrderDto.class))).thenReturn(orderDto);
 
         // Act
         ResponseEntity<OrderDto> responseEntity = ordersController.createOrder(orderDto);
         OrderDto createdOrder = responseEntity.getBody();
 
         //Assert
-        assert createdOrder != null;
-        Assertions.assertEquals(orderDto.getOrderItems().size(),
-                createdOrder.getOrderItems().size(),
-                "Didn't return the correct orderItems list length");
+        assertEquals(HttpStatus.CREATED, responseEntity.getStatusCode());
+        assertEquals(orderDto, createdOrder);
         verify(orderService).createOrder(any(OrderDto.class));
-    }
+        verify(orderService).processFulfillment();
+}
 }
