@@ -14,6 +14,7 @@ import java.math.BigDecimal;
 @ToString
 @AllArgsConstructor
 @NoArgsConstructor
+@Builder
 public class Product extends BaseEntity{
 
     @Id

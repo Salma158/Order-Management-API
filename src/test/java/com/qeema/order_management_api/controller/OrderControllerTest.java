@@ -9,12 +9,14 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Mockito.*;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+
 import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 public class OrderControllerTest {
@@ -31,36 +33,33 @@ public class OrderControllerTest {
 
     @BeforeEach
     public void setUp() {
+        // Initialize request OrderDto using builder pattern
+        requestOrderDto = OrderDto.builder()
+                .orderItems(List.of(OrderItemDto.builder()
+                        .productId(1L)
+                        .quantity(2L)
+                        .build()))
+                .build();
 
-        // Initialize request OrderDto
-        requestOrderDto = new OrderDto();
-        OrderItemDto requestOrderItem = new OrderItemDto();
-        requestOrderItem.setProductId(1L);
-        requestOrderItem.setQuantity(2L);
+        // Initialize expected response OrderDto using builder pattern
+        expectedOrderDto = OrderDto.builder()
+                .id(1L)
+                .status("Pending")
+                .orderItems(List.of(OrderItemDto.builder()
+                        .id(1L)
+                        .productId(1L)
+                        .quantity(2L)
+                        .build()))
+                .build();
 
-        List<OrderItemDto> requestOrderItems = List.of(requestOrderItem);
-        requestOrderDto.setOrderItems(requestOrderItems);
-
-        // Initialize expected response OrderDto
-        expectedOrderDto = new OrderDto();
-        OrderItemDto responseOrderItem = new OrderItemDto();
-        responseOrderItem.setId(1L);
-        responseOrderItem.setProductId(1L);
-        responseOrderItem.setQuantity(2L);
-
-        List<OrderItemDto> responseOrderItems = List.of(responseOrderItem);
-        expectedOrderDto.setOrderItems(responseOrderItems);
-        expectedOrderDto.setId(1L);
-        expectedOrderDto.setStatus("Pending");
-
+        // Initialize expected order list using builder pattern
         expectedOrderList = List.of(expectedOrderDto);
     }
 
     @Test
     @DisplayName("Order can be created")
     void testCreateOrder_whenValidOrderDetailsProvided_returnsCreatedOrderDetails() {
-
-        //Arrange
+        // Arrange
         when(orderService.createOrder(any(OrderDto.class))).thenReturn(expectedOrderDto);
         doNothing().when(orderService).processFulfillment();
 
@@ -68,7 +67,7 @@ public class OrderControllerTest {
         ResponseEntity<OrderDto> responseEntity = ordersController.createOrder(requestOrderDto);
         OrderDto createdOrder = responseEntity.getBody();
 
-        //Assert
+        // Assert
         assertEquals(HttpStatus.CREATED, responseEntity.getStatusCode());
         assertEquals(expectedOrderDto.getId(), createdOrder.getId());
         assertEquals(expectedOrderDto.getStatus(), createdOrder.getStatus());
@@ -80,7 +79,6 @@ public class OrderControllerTest {
     @Test
     @DisplayName("All created orders are fetched")
     void testFetchAllOrders_returnsListOfOrders() {
-
         // Arrange
         when(orderService.fetchAllOrders()).thenReturn(expectedOrderList);
 
@@ -93,7 +91,4 @@ public class OrderControllerTest {
         assertEquals(expectedOrderList, orders);
         verify(orderService).fetchAllOrders();
     }
-
-
-
 }

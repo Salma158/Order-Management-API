@@ -2,9 +2,15 @@ package com.qeema.order_management_api.dto;
 
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
+@Builder
+@NoArgsConstructor // Add this
+@AllArgsConstructor
 public class OrderItemDto {
 
     private Long id;

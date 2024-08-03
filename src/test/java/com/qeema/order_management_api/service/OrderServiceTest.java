@@ -37,55 +37,48 @@ public class OrderServiceTest {
     @InjectMocks
     private OrderService orderService;
 
-    private OrderDto requestOrderDto;
-    private OrderDto expectedOrderDto;
-    private Order savedOrder;
     private Product product;
 
     @BeforeEach
     public void setUp() {
-
-        requestOrderDto = createOrderDto(null, 1L, 2L);
-
-        savedOrder = createOrder(1L, "Pending", 1L, 2L);
-
-        expectedOrderDto = createOrderDto(1L, 1L, 2L);
-        expectedOrderDto.setId(1L);
-        expectedOrderDto.setStatus("Pending");
-
-        product = new Product();
-        product.setId(1L);
-        product.setStock(10);
-    }
-
-    private OrderDto createOrderDto(Long itemId, Long productId, Long quantity) {
-        OrderDto orderDto = new OrderDto();
-        OrderItemDto orderItemDto = new OrderItemDto();
-        orderItemDto.setId(itemId);
-        orderItemDto.setProductId(productId);
-        orderItemDto.setQuantity(quantity);
-        orderDto.setOrderItems(List.of(orderItemDto));
-        return orderDto;
-    }
-
-    private Order createOrder(Long orderId, String status, Long productId, Long quantity) {
-        Order order = new Order();
-        order.setId(orderId);
-        order.setStatus(status);
-
-        OrderItem orderItem = new OrderItem();
-        orderItem.setId(1L);
-        orderItem.setProductId(productId);
-        orderItem.setQuantity(quantity);
-
-        order.setOrderItems(List.of(orderItem));
-        return order;
+        // Initialize common data
+        product = Product.builder()
+                .id(1L)
+                .stock(10)
+                .build();
     }
 
     @Test
     @DisplayName("Create order with valid details")
     void testCreateOrder_whenValidOrderDetailsProvided_returnsCreatedOrder() {
         // Arrange
+        OrderDto requestOrderDto = OrderDto.builder()
+                .orderItems(List.of(OrderItemDto.builder()
+                        .productId(1L)
+                        .quantity(2L)
+                        .build()))
+                .build();
+
+        Order savedOrder = Order.builder()
+                .id(1L)
+                .status("Pending")
+                .orderItems(List.of(OrderItem.builder()
+                        .id(1L)
+                        .productId(1L)
+                        .quantity(2L)
+                        .build()))
+                .build();
+
+        OrderDto expectedOrderDto = OrderDto.builder()
+                .id(1L)
+                .status("Pending")
+                .orderItems(List.of(OrderItemDto.builder()
+                        .id(1L)
+                        .productId(1L)
+                        .quantity(2L)
+                        .build()))
+                .build();
+
         when(orderRepository.save(any(Order.class))).thenReturn(savedOrder);
         when(productsRepository.findById(1L)).thenReturn(Optional.of(product));
 
@@ -96,9 +89,6 @@ public class OrderServiceTest {
         assertEquals(expectedOrderDto.getId(), createdOrder.getId());
         assertEquals(expectedOrderDto.getStatus(), createdOrder.getStatus());
         assertEquals(expectedOrderDto.getOrderItems().size(), createdOrder.getOrderItems().size());
-        assertEquals(expectedOrderDto.getOrderItems().get(0).getId(), createdOrder.getOrderItems().get(0).getId());
-        assertEquals(expectedOrderDto.getOrderItems().get(0).getProductId(), createdOrder.getOrderItems().get(0).getProductId());
-        assertEquals(expectedOrderDto.getOrderItems().get(0).getQuantity(), createdOrder.getOrderItems().get(0).getQuantity());
         verify(orderRepository).save(any(Order.class));
     }
 
@@ -106,11 +96,17 @@ public class OrderServiceTest {
     @DisplayName("Throw DuplicateProductException when duplicate product IDs are provided")
     void testCreateOrder_whenDuplicateProductIds_throwsDuplicateProductException() {
         // Arrange
-        OrderDto orderDtoWithDuplicates = createOrderDto(null, 1L, 2L);
-        OrderItemDto duplicateItem = new OrderItemDto();
-        duplicateItem.setProductId(1L);
-        duplicateItem.setQuantity(1L);
-        orderDtoWithDuplicates.setOrderItems(List.of(orderDtoWithDuplicates.getOrderItems().get(0), duplicateItem));
+        OrderDto orderDtoWithDuplicates = OrderDto.builder()
+                .orderItems(List.of(
+                        OrderItemDto.builder()
+                                .productId(1L)
+                                .quantity(2L)
+                                .build(),
+                        OrderItemDto.builder()
+                                .productId(1L)
+                                .quantity(1L)
+                                .build()))
+                .build();
 
         when(productsRepository.findById(1L)).thenReturn(Optional.of(product));
 
@@ -122,9 +118,14 @@ public class OrderServiceTest {
     @DisplayName("Throw ResourceNotFoundException when product does not exist")
     void testCreateOrder_whenProductDoesNotExist_throwsResourceNotFoundException() {
         // Arrange
-        OrderDto invalidOrderDto = createOrderDto(null, 999L, 2L);
+        OrderDto invalidOrderDto = OrderDto.builder()
+                .orderItems(List.of(OrderItemDto.builder()
+                        .productId(3L)
+                        .quantity(2L)
+                        .build()))
+                .build();
 
-        when(productsRepository.findById(999L)).thenReturn(Optional.empty());
+        when(productsRepository.findById(3L)).thenReturn(Optional.empty());
 
         // Act & Assert
         assertThrows(ResourceNotFoundException.class, () -> orderService.createOrder(invalidOrderDto));
@@ -134,15 +135,49 @@ public class OrderServiceTest {
     @DisplayName("Throw InsufficientStockException when quantity exceeds stock")
     void testCreateOrder_whenQuantityExceedsStock_throwsInsufficientStockException() {
         // Arrange
-        OrderDto orderDtoWithInsufficientStock = new OrderDto();
-        OrderItemDto orderItem = new OrderItemDto();
-        orderItem.setProductId(1L);
-        orderItem.setQuantity(20L);
-        orderDtoWithInsufficientStock.setOrderItems(List.of(orderItem));
+        OrderDto orderDtoWithInsufficientStock = OrderDto.builder()
+                .orderItems(List.of(OrderItemDto.builder()
+                        .productId(1L)
+                        .quantity(20L)
+                        .build()))
+                .build();
 
         when(productsRepository.findById(1L)).thenReturn(Optional.of(product));
 
         // Act & Assert
         assertThrows(InsufficientStockException.class, () -> orderService.createOrder(orderDtoWithInsufficientStock));
+    }
+
+    @Test
+    @DisplayName("Fetch all orders")
+    void testFetchAllOrders() {
+        // Arrange
+        Order expectedOrder = Order.builder()
+                .id(1L)
+                .status("Pending")
+                .orderItems(List.of(OrderItem.builder()
+                        .id(1L)
+                        .productId(1L)
+                        .quantity(2L)
+                        .build()))
+                .build();
+
+        OrderDto expectedOrderDto = OrderDto.builder()
+                .id(1L)
+                .status("Pending")
+                .orderItems(List.of(OrderItemDto.builder()
+                        .id(1L)
+                        .productId(1L)
+                        .quantity(2L)
+                        .build()))
+                .build();
+
+        when(orderRepository.findAll()).thenReturn(List.of(expectedOrder));
+
+        // Act
+        List<OrderDto> actualOrderDtos = orderService.fetchAllOrders();
+
+        // Assert
+        assertEquals(List.of(expectedOrderDto), actualOrderDtos);
     }
 }

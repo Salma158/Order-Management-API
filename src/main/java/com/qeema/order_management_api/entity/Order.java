@@ -12,6 +12,7 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @Table(name = "ORDER_TABLE")
+@Builder
 public class Order{
 
     @Id
