@@ -1,7 +1,10 @@
 package com.qeema.order_management_api.controller;
 
 import com.qeema.order_management_api.dto.OrderDto;
+import com.qeema.order_management_api.entity.Order;
+import com.qeema.order_management_api.entity.OrderItem;
 import com.qeema.order_management_api.entity.Product;
+import com.qeema.order_management_api.repository.OrdersRepository;
 import com.qeema.order_management_api.repository.ProductsRepository;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -14,6 +17,10 @@ import org.springframework.http.*;
 
 import java.math.BigDecimal;
 import java.util.Arrays;
+import java.util.List;
+
+import static org.hibernate.validator.internal.util.Contracts.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class OrdersControllerIntegrationTest {
@@ -24,13 +31,15 @@ public class OrdersControllerIntegrationTest {
     @Autowired
     private ProductsRepository productsRepository;
 
+    @Autowired
+    private OrdersRepository orderRepository;
+
     private HttpHeaders headers;
+
+    private List<Product> savedProducts;
 
     @BeforeEach
     void setup() {
-
-        productsRepository.deleteAll();
-
         headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
@@ -46,47 +55,75 @@ public class OrdersControllerIntegrationTest {
                 .stock(10)
                 .build();
 
-        productsRepository.save(product1);
-        productsRepository.save(product2);
+        savedProducts = Arrays.asList(product1, product2);
+        productsRepository.saveAll(savedProducts);
+
+        OrderItem orderItem = OrderItem.builder()
+                .productId(product2.getId())
+                .quantity(2L)
+                .build();
+
+        Order order1 = Order.builder()
+                .orderItems(List.of(orderItem))
+                .status("Pending")
+                .build();
+
+        orderItem.setOrder(order1);
+        orderRepository.save(order1);
+    }
+
+    @AfterEach
+    void cleanup() {
+        orderRepository.deleteAll();
+        productsRepository.deleteAll();
     }
 
     @Test
     @DisplayName("Order can be created")
     void testCreateOrder_whenValidDetailsProvided_returnsOrderDetails() throws JSONException {
         // Arrange
-        JSONObject orderDetailsRequestJson = createOrderDetailsRequestJson();
-
+        JSONObject orderDetailsRequestJson = createOrderDetailsRequestJson(savedProducts);
         HttpEntity<String> request = new HttpEntity<>(orderDetailsRequestJson.toString(), headers);
-
-        System.out.println(request);
 
         // Act
         ResponseEntity<OrderDto> createdOrderResponse = testRestTemplate.postForEntity("/api/orders", request, OrderDto.class);
-        System.out.println(createdOrderResponse);
         OrderDto createdOrderDetails = createdOrderResponse.getBody();
 
         // Assert
-        Assertions.assertEquals(HttpStatus.CREATED, createdOrderResponse.getStatusCode());
-        Assertions.assertNotNull(createdOrderDetails);
-        Assertions.assertNotNull(createdOrderDetails.getId());
-        Assertions.assertEquals(2, createdOrderDetails.getOrderItems().size());
+        assertEquals(HttpStatus.CREATED, createdOrderResponse.getStatusCode());
+        assertNotNull(createdOrderDetails);
+        assertNotNull(createdOrderDetails.getId());
+        assertEquals(2, createdOrderDetails.getOrderItems().size());
     }
 
-    private JSONObject createOrderDetailsRequestJson() throws JSONException {
+    private JSONObject createOrderDetailsRequestJson(List<Product> products) throws JSONException {
         JSONObject orderDetailsRequestJson = new JSONObject();
         JSONArray orderItemsArray = new JSONArray();
 
         JSONObject orderItem1 = new JSONObject();
-        orderItem1.put("productId", 1);
+        orderItem1.put("productId", products.get(0).getId());
         orderItem1.put("quantity", 2);
         orderItemsArray.put(orderItem1);
 
         JSONObject orderItem2 = new JSONObject();
-        orderItem2.put("productId", 2);
+        orderItem2.put("productId", products.get(1).getId());
         orderItem2.put("quantity", 1);
         orderItemsArray.put(orderItem2);
 
         orderDetailsRequestJson.put("orderItems", orderItemsArray);
         return orderDetailsRequestJson;
     }
+
+    @Test
+    @DisplayName("Fetch all orders")
+    void testFetchAllOrders_returnsOrderList() {
+        // Act
+        ResponseEntity<OrderDto[]> response = testRestTemplate.getForEntity("/api/orders", OrderDto[].class);
+
+        // Assert
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        OrderDto[] orders = response.getBody();
+        assertEquals(1, orders.length);
+    }
+
 }
