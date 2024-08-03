@@ -6,6 +6,7 @@ import com.qeema.order_management_api.entity.Order;
 import com.qeema.order_management_api.entity.OrderItem;
 import com.qeema.order_management_api.entity.Product;
 import com.qeema.order_management_api.exception.DuplicateProductException;
+import com.qeema.order_management_api.exception.InsufficientStockException;
 import com.qeema.order_management_api.exception.ResourceNotFoundException;
 import com.qeema.order_management_api.repository.OrdersRepository;
 import com.qeema.order_management_api.repository.ProductsRepository;
@@ -127,5 +128,21 @@ public class OrderServiceTest {
 
         // Act & Assert
         assertThrows(ResourceNotFoundException.class, () -> orderService.createOrder(invalidOrderDto));
+    }
+
+    @Test
+    @DisplayName("Throw InsufficientStockException when quantity exceeds stock")
+    void testCreateOrder_whenQuantityExceedsStock_throwsInsufficientStockException() {
+        // Arrange
+        OrderDto orderDtoWithInsufficientStock = new OrderDto();
+        OrderItemDto orderItem = new OrderItemDto();
+        orderItem.setProductId(1L);
+        orderItem.setQuantity(20L);
+        orderDtoWithInsufficientStock.setOrderItems(List.of(orderItem));
+
+        when(productsRepository.findById(1L)).thenReturn(Optional.of(product));
+
+        // Act & Assert
+        assertThrows(InsufficientStockException.class, () -> orderService.createOrder(orderDtoWithInsufficientStock));
     }
 }
