@@ -25,18 +25,31 @@ public class OrderControllerWebLayerTest {
     @InjectMocks
     private OrdersController ordersController;
 
-    private OrderDto orderDto;
+    private OrderDto requestOrderDto;
+    private OrderDto expectedOrderDto;
 
     @BeforeEach
     public void setUp() {
-        orderDto = new OrderDto();
-        OrderItemDto orderItemDto = new OrderItemDto();
-        orderItemDto.setProductId(1L);
-        orderItemDto.setQuantity(20L);
+        // Initialize request OrderDto
+        requestOrderDto = new OrderDto();
+        OrderItemDto requestOrderItem = new OrderItemDto();
+        requestOrderItem.setProductId(1L);
+        requestOrderItem.setQuantity(2L);
 
-        List<OrderItemDto> orderItems = List.of(orderItemDto);
-        orderDto = new OrderDto();
-        orderDto.setOrderItems(orderItems);
+        List<OrderItemDto> requestOrderItems = List.of(requestOrderItem);
+        requestOrderDto.setOrderItems(requestOrderItems);
+
+        // Initialize expected response OrderDto
+        expectedOrderDto = new OrderDto();
+        OrderItemDto responseOrderItem = new OrderItemDto();
+        responseOrderItem.setId(1L);
+        responseOrderItem.setProductId(1L);
+        responseOrderItem.setQuantity(2L);
+
+        List<OrderItemDto> responseOrderItems = List.of(responseOrderItem);
+        expectedOrderDto.setOrderItems(responseOrderItems);
+        expectedOrderDto.setId(1L);
+        expectedOrderDto.setStatus("Pending");
     }
 
     @Test
@@ -44,15 +57,18 @@ public class OrderControllerWebLayerTest {
     void testCreateOrder_whenValidOrderDetailsProvided_returnsCreatedOrderDetails() {
 
         //Arrange
-        when(orderService.createOrder(any(OrderDto.class))).thenReturn(orderDto);
+        when(orderService.createOrder(any(OrderDto.class))).thenReturn(expectedOrderDto);
+        doNothing().when(orderService).processFulfillment();
 
         // Act
-        ResponseEntity<OrderDto> responseEntity = ordersController.createOrder(orderDto);
+        ResponseEntity<OrderDto> responseEntity = ordersController.createOrder(requestOrderDto);
         OrderDto createdOrder = responseEntity.getBody();
 
         //Assert
         assertEquals(HttpStatus.CREATED, responseEntity.getStatusCode());
-        assertEquals(orderDto, createdOrder);
+        assertEquals(expectedOrderDto.getId(), createdOrder.getId());
+        assertEquals(expectedOrderDto.getStatus(), createdOrder.getStatus());
+        assertEquals(expectedOrderDto.getOrderItems(), createdOrder.getOrderItems());
         verify(orderService).createOrder(any(OrderDto.class));
         verify(orderService).processFulfillment();
 }
