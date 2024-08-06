@@ -78,8 +78,9 @@ public class OrdersControllerIntegrationTest {
         productsRepository.deleteAll();
     }
 
+
     @Test
-    @DisplayName("Order can be created")
+    @DisplayName("create order with valid order details")
     void testCreateOrder_whenValidDetailsProvided_returnsOrderDetails() throws JSONException {
         // Arrange
         JSONObject orderDetailsRequestJson = createOrderDetailsRequestJson(savedProducts);
@@ -94,6 +95,77 @@ public class OrdersControllerIntegrationTest {
         assertNotNull(createdOrderDetails);
         assertNotNull(createdOrderDetails.getId());
         assertEquals(2, createdOrderDetails.getOrderItems().size());
+    }
+
+    @Test
+    @DisplayName("create order with non-existent product")
+    void testCreateOrder_withNonExistentProduct_returnsNotFound() throws JSONException {
+        // Arrange
+        JSONObject orderDetailsRequestJson = new JSONObject();
+        JSONArray orderItemsArray = new JSONArray();
+
+        JSONObject orderItem1 = new JSONObject();
+        orderItem1.put("productId", 999L); // non-existent product ID
+        orderItem1.put("quantity", 1);
+        orderItemsArray.put(orderItem1);
+
+        orderDetailsRequestJson.put("orderItems", orderItemsArray);
+        HttpEntity<String> request = new HttpEntity<>(orderDetailsRequestJson.toString(), headers);
+
+        // Act
+        ResponseEntity<String> responseEntity = testRestTemplate.postForEntity("/api/orders", request, String.class);
+
+        // Assert
+        assertEquals(HttpStatus.NOT_FOUND, responseEntity.getStatusCode());
+    }
+
+    @Test
+    @DisplayName("create order with quantity exceeding stock")
+    void testCreateOrder_withQuantityExceedingStock_returnsBadRequest() throws JSONException {
+        // Arrange
+        JSONObject orderDetailsRequestJson = new JSONObject();
+        JSONArray orderItemsArray = new JSONArray();
+
+        JSONObject orderItem1 = new JSONObject();
+        orderItem1.put("productId", savedProducts.get(0).getId()); // valid product ID
+        orderItem1.put("quantity", 20); // quantity exceeding stock
+        orderItemsArray.put(orderItem1);
+
+        orderDetailsRequestJson.put("orderItems", orderItemsArray);
+        HttpEntity<String> request = new HttpEntity<>(orderDetailsRequestJson.toString(), headers);
+
+        // Act
+        ResponseEntity<String> responseEntity = testRestTemplate.postForEntity("/api/orders", request, String.class);
+
+        // Assert
+        assertEquals(HttpStatus.CONFLICT, responseEntity.getStatusCode());
+    }
+
+    @Test
+    @DisplayName("create order with duplicate products")
+    void testCreateOrder_withDuplicateProducts_returnsBadRequest() throws JSONException {
+        // Arrange
+        JSONObject orderDetailsRequestJson = new JSONObject();
+        JSONArray orderItemsArray = new JSONArray();
+
+        JSONObject orderItem1 = new JSONObject();
+        orderItem1.put("productId", savedProducts.get(0).getId()); // valid product ID
+        orderItem1.put("quantity", 2);
+        orderItemsArray.put(orderItem1);
+
+        JSONObject orderItem2 = new JSONObject();
+        orderItem2.put("productId", savedProducts.get(0).getId()); // same product ID
+        orderItem2.put("quantity", 1);
+        orderItemsArray.put(orderItem2);
+
+        orderDetailsRequestJson.put("orderItems", orderItemsArray);
+        HttpEntity<String> request = new HttpEntity<>(orderDetailsRequestJson.toString(), headers);
+
+        // Act
+        ResponseEntity<String> responseEntity = testRestTemplate.postForEntity("/api/orders", request, String.class);
+
+        // Assert
+        assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
     }
 
     private JSONObject createOrderDetailsRequestJson(List<Product> products) throws JSONException {
@@ -125,5 +197,4 @@ public class OrdersControllerIntegrationTest {
         OrderDto[] orders = response.getBody();
         assertEquals(1, orders.length);
     }
-
 }
