@@ -2,7 +2,6 @@ package com.qeema.order_management_api.service;
 
 import com.qeema.order_management_api.dto.ProductDto;
 import com.qeema.order_management_api.entity.Product;
-import com.qeema.order_management_api.mapper.ProductMapper;
 import com.qeema.order_management_api.repository.ProductsRepository;
 import com.qeema.order_management_api.service.impl.ProductsService;
 import org.junit.jupiter.api.BeforeEach;
