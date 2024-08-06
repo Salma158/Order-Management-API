@@ -21,3 +21,4 @@ public class ProductDto {
     @Positive(message = "Stock must be greater than or equal to zero")
     private Integer stock;
 }
+

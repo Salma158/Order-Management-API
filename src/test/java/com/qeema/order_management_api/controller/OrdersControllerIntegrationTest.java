@@ -98,7 +98,7 @@ public class OrdersControllerIntegrationTest {
     }
 
     @Test
-    @DisplayName("create order with non-existent product")
+    @DisplayName("Attempt to create order with non-existent product")
     void testCreateOrder_withNonExistentProduct_returnsNotFound() throws JSONException {
         // Arrange
         JSONObject orderDetailsRequestJson = new JSONObject();
@@ -120,7 +120,7 @@ public class OrdersControllerIntegrationTest {
     }
 
     @Test
-    @DisplayName("create order with quantity exceeding stock")
+    @DisplayName("Attempt to create order with quantity exceeding stock")
     void testCreateOrder_withQuantityExceedingStock_returnsBadRequest() throws JSONException {
         // Arrange
         JSONObject orderDetailsRequestJson = new JSONObject();
@@ -142,7 +142,7 @@ public class OrdersControllerIntegrationTest {
     }
 
     @Test
-    @DisplayName("create order with duplicate products")
+    @DisplayName("Attempt to create order with duplicate products")
     void testCreateOrder_withDuplicateProducts_returnsBadRequest() throws JSONException {
         // Arrange
         JSONObject orderDetailsRequestJson = new JSONObject();
