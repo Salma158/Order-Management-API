@@ -1,5 +1,6 @@
 package com.qeema.order_management_api.dto;
 
+import com.qeema.order_management_api.constants.OrderStatus;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotEmpty;
@@ -25,11 +26,9 @@ public class OrderDto {
     )
     private Long id;
 
-    @Schema(
-            description = "Status of the order",
-            example = "Shipped"
-    )
-    private String status;
+    @Schema(description = "Status of the order",
+            example = "SHIPPED")
+    private OrderStatus status;
 
     @NotEmpty(message = "Order items cannot be empty")
     @Valid

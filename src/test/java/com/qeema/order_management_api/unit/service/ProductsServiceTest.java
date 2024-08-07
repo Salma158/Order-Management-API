@@ -1,4 +1,4 @@
-package com.qeema.order_management_api.service;
+package com.qeema.order_management_api.unit.service;
 
 import com.qeema.order_management_api.dto.ProductDto;
 import com.qeema.order_management_api.entity.Product;

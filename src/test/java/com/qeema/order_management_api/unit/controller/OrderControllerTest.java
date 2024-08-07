@@ -1,5 +1,6 @@
 package com.qeema.order_management_api.unit.controller;
 
+import com.qeema.order_management_api.constants.OrderStatus;
 import com.qeema.order_management_api.controller.OrdersController;
 import com.qeema.order_management_api.dto.OrderDto;
 import com.qeema.order_management_api.dto.OrderItemDto;
@@ -44,7 +45,7 @@ public class OrderControllerTest {
 
         expectedOrderDto = OrderDto.builder()
                 .id(1L)
-                .status("Pending")
+                .status(OrderStatus.PENDING)
                 .orderItems(List.of(OrderItemDto.builder()
                         .id(1L)
                         .productId(1L)

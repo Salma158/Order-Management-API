@@ -1,5 +1,6 @@
 package com.qeema.order_management_api.unit.service;
 
+import com.qeema.order_management_api.constants.OrderStatus;
 import com.qeema.order_management_api.dto.OrderDto;
 import com.qeema.order_management_api.dto.OrderItemDto;
 import com.qeema.order_management_api.entity.Order;
@@ -61,7 +62,7 @@ public class OrderServiceTest {
 
         Order savedOrder = Order.builder()
                 .id(1L)
-                .status("Pending")
+                .status(OrderStatus.PENDING)
                 .orderItems(List.of(OrderItem.builder()
                         .id(1L)
                         .productId(1L)
@@ -71,7 +72,7 @@ public class OrderServiceTest {
 
         OrderDto expectedOrderDto = OrderDto.builder()
                 .id(1L)
-                .status("Pending")
+                .status(OrderStatus.PENDING)
                 .orderItems(List.of(OrderItemDto.builder()
                         .id(1L)
                         .productId(1L)
@@ -154,7 +155,7 @@ public class OrderServiceTest {
         // Arrange
         Order expectedOrder = Order.builder()
                 .id(1L)
-                .status("Pending")
+                .status(OrderStatus.PENDING)
                 .orderItems(List.of(OrderItem.builder()
                         .id(1L)
                         .productId(1L)
@@ -164,7 +165,7 @@ public class OrderServiceTest {
 
         OrderDto expectedOrderDto = OrderDto.builder()
                 .id(1L)
-                .status("Pending")
+                .status(OrderStatus.PENDING)
                 .orderItems(List.of(OrderItemDto.builder()
                         .id(1L)
                         .productId(1L)

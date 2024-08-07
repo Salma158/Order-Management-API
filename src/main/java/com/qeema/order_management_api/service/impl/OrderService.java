@@ -1,5 +1,6 @@
 package com.qeema.order_management_api.service.impl;
 
+import com.qeema.order_management_api.constants.OrderStatus;
 import com.qeema.order_management_api.dto.OrderDto;
 import com.qeema.order_management_api.entity.Order;
 import com.qeema.order_management_api.entity.OrderItem;
@@ -12,9 +13,9 @@ import com.qeema.order_management_api.repository.OrdersRepository;
 import com.qeema.order_management_api.repository.ProductsRepository;
 import com.qeema.order_management_api.service.IOrderService;
 import jakarta.transaction.Transactional;
+import lombok.AllArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
@@ -23,6 +24,7 @@ import java.util.List;
 import java.util.Set;
 
 @Service
+@AllArgsConstructor
 public class OrderService implements IOrderService {
 
     private final OrdersRepository ordersRepository;
@@ -30,13 +32,6 @@ public class OrderService implements IOrderService {
 
     public static final Logger log = LoggerFactory.getLogger(OrderService.class);
 
-    public OrderService(OrdersRepository ordersRepository, ProductsRepository productsRepository){
-        this.ordersRepository = ordersRepository;
-        this.productsRepository = productsRepository;
-    }
-
-    @Value("${order.default.status}")
-    private String defaultStatus;
 
     @Override
     @Transactional
@@ -59,7 +54,7 @@ public class OrderService implements IOrderService {
 
 
         Order order = OrderMapper.MAPPER.maptoOrder(orderDto);
-        order.setStatus(defaultStatus);
+        order.setStatus(OrderStatus.PENDING);
         for (OrderItem item : order.getOrderItems()) {
             item.setOrder(order);
         }

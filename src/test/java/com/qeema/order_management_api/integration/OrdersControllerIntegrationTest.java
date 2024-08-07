@@ -1,5 +1,6 @@
 package com.qeema.order_management_api.integration;
 
+import com.qeema.order_management_api.constants.OrderStatus;
 import com.qeema.order_management_api.dto.OrderDto;
 import com.qeema.order_management_api.entity.Order;
 import com.qeema.order_management_api.entity.OrderItem;
@@ -65,7 +66,7 @@ public class OrdersControllerIntegrationTest {
 
         Order order1 = Order.builder()
                 .orderItems(List.of(orderItem))
-                .status("Pending")
+                .status(OrderStatus.PENDING)
                 .build();
 
         orderItem.setOrder(order1);
