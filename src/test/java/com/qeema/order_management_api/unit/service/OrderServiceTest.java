@@ -1,4 +1,4 @@
-package com.qeema.order_management_api.service;
+package com.qeema.order_management_api.unit.service;
 
 import com.qeema.order_management_api.dto.OrderDto;
 import com.qeema.order_management_api.dto.OrderItemDto;
@@ -41,7 +41,7 @@ public class OrderServiceTest {
 
     @BeforeEach
     public void setUp() {
-        // Initialize common data
+
         product = Product.builder()
                 .id(1L)
                 .stock(10)

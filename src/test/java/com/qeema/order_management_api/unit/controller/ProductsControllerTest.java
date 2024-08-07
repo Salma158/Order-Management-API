@@ -1,5 +1,6 @@
-package com.qeema.order_management_api.controller;
+package com.qeema.order_management_api.unit.controller;
 
+import com.qeema.order_management_api.controller.ProductsController;
 import com.qeema.order_management_api.dto.ProductDto;
 import com.qeema.order_management_api.service.IProductsService;
 import org.junit.jupiter.api.BeforeEach;
@@ -18,7 +19,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-public class ProductsControllerUnitTest {
+public class ProductsControllerTest {
 
     @Mock
     private IProductsService productsService;

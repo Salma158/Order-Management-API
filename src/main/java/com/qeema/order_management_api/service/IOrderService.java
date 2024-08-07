@@ -10,5 +10,5 @@ public interface IOrderService {
 
     List<OrderDto> fetchAllOrders();
 
-    void processFulfillment();
+    void processFulfillment(OrderDto orderDto);
 }

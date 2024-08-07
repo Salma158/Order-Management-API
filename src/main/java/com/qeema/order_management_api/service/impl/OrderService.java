@@ -12,6 +12,8 @@ import com.qeema.order_management_api.repository.OrdersRepository;
 import com.qeema.order_management_api.repository.ProductsRepository;
 import com.qeema.order_management_api.service.IOrderService;
 import jakarta.transaction.Transactional;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
@@ -25,6 +27,8 @@ public class OrderService implements IOrderService {
 
     private final OrdersRepository ordersRepository;
     private final ProductsRepository productsRepository;
+
+    public static final Logger log = LoggerFactory.getLogger(OrderService.class);
 
     public OrderService(OrdersRepository ordersRepository, ProductsRepository productsRepository){
         this.ordersRepository = ordersRepository;
@@ -65,32 +69,32 @@ public class OrderService implements IOrderService {
     }
 
     @Async
-    public void processFulfillment() {
-        decrementStock();
-        sendConfirmationEmail();
-        handlePacking();
-        assignDriver();
-        handleDelivery();
+    public void processFulfillment(OrderDto orderDto) {
+        decrementStock(orderDto);
+        sendConfirmationEmail(orderDto);
+        handlePacking(orderDto);
+        assignDriver(orderDto);
+        handleDelivery(orderDto);
     }
 
-    public void decrementStock(){
-            System.out.println("decrease the stock of the product");
+    public void decrementStock(OrderDto orderDto){
+        log.info("decrease the stock of the products of the order : ", orderDto.getId());
     }
 
-    public void sendConfirmationEmail(){
-        System.out.println("sending confirmation email to the user");
+    public void sendConfirmationEmail(OrderDto orderDto){
+        log.info("sending confirmation email to the user, confirming the order : ", orderDto.getId());
     }
 
-    public void handlePacking(){
-        System.out.println("handle the packaging of the order products");
+    public void handlePacking(OrderDto orderDto){
+        log.info("handle the packaging of the products of order : ", orderDto.getId());
     }
 
-    public void assignDriver(){
-        System.out.println("assigning a driver for the order");
+    public void assignDriver(OrderDto orderDto){
+        log.info("assigning a driver for the order : ", orderDto.getId());
     }
 
-    public void handleDelivery(){
-        System.out.println("assigning a truck for the order");
+    public void handleDelivery(OrderDto orderDto){
+        log.info("assigning a truck for the order : ", orderDto.getId());
     }
 
     @Override

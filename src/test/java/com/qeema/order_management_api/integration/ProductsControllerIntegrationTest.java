@@ -1,4 +1,4 @@
-package com.qeema.order_management_api.controller;
+package com.qeema.order_management_api.integration;
 
 import com.qeema.order_management_api.dto.ProductDto;
 import com.qeema.order_management_api.repository.ProductsRepository;

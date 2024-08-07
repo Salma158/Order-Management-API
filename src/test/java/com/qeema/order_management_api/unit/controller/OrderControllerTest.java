@@ -1,5 +1,6 @@
-package com.qeema.order_management_api.controller;
+package com.qeema.order_management_api.unit.controller;
 
+import com.qeema.order_management_api.controller.OrdersController;
 import com.qeema.order_management_api.dto.OrderDto;
 import com.qeema.order_management_api.dto.OrderItemDto;
 import com.qeema.order_management_api.service.impl.OrderService;
@@ -19,7 +20,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-public class OrderControllerUnitTest {
+public class OrderControllerTest {
 
     @Mock
     private OrderService orderService;
@@ -59,7 +60,7 @@ public class OrderControllerUnitTest {
     void testCreateOrder_whenValidOrderDetailsProvided_returnsCreatedOrderDetails() {
         // Arrange
         when(orderService.createOrder(any(OrderDto.class))).thenReturn(expectedOrderDto);
-        doNothing().when(orderService).processFulfillment();
+        doNothing().when(orderService).processFulfillment(any(OrderDto.class));
 
         // Act
         ResponseEntity<OrderDto> responseEntity = ordersController.createOrder(requestOrderDto);
@@ -71,7 +72,7 @@ public class OrderControllerUnitTest {
         assertEquals(expectedOrderDto.getStatus(), createdOrder.getStatus());
         assertEquals(expectedOrderDto.getOrderItems(), createdOrder.getOrderItems());
         verify(orderService).createOrder(any(OrderDto.class));
-        verify(orderService).processFulfillment();
+        verify(orderService).processFulfillment(any(OrderDto.class));
     }
 
     @Test
